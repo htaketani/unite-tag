@@ -343,10 +343,7 @@ function! s:taglist_filter(input, name) abort
     \                     g:unite_source_tag_max_name_length,
     \                     g:unite_source_tag_name_footer_length, '..'),
     \                  (!g:unite_source_tag_show_fname ? '' :
-    \                    '  ' . s:truncate('@'.fnamemodify(
-    \                     v:val.filename, (a:name ==# 'tag/include'
-    \                          || !g:unite_source_tag_relative_fname ?
-    \                     ':t' : ':~:.')),
+    \                    '  ' . s:truncate('@'.s:get_fname(v:val.filename, a:name),
     \                     g:unite_source_tag_max_fname_length,
     \                     g:unite_source_tag_fname_footer_length, '..')),
     \                  (!g:unite_source_tag_show_kind ? '' :
@@ -448,10 +445,7 @@ function! s:next(tagdata, line, name) abort
     if g:unite_source_tag_show_fname
         let abbr .= '  '
         let abbr .= s:truncate('@'.
-                    \  fnamemodify(path, (
-                    \   (a:name ==# 'tag/include'
-                    \    || !g:unite_source_tag_relative_fname) ?
-                    \    ':t' : ':~:.')),
+                    \  s:get_fname(path, a:name),
                     \  g:unite_source_tag_max_fname_length,
                     \  g:unite_source_tag_fname_footer_length, '..')
     endif
@@ -581,6 +575,18 @@ function! s:parse_option(line) abort
     endfor
 
     return option
+endfunction
+
+function! s:get_fname(filename, name) abort
+    " project based
+    if g:current_project_base_dir != '' && stridx(a:filename, g:current_project_base_dir) == 0
+        return a:filename[strlen(g:current_project_base_dir)+1:]
+    endif
+
+    return fnamemodify(
+    \   a:filename, (a:name ==# 'tag/include'
+    \        || !g:unite_source_tag_relative_fname ?
+    \   ':t' : ':~:.'))
 endfunction
 
 " action
